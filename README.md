@@ -1,6 +1,6 @@
 # yugilator
 
-A new Flutter project.
+A Yu-Gi-Oh calculator using flutter!
 
 ## Getting Started
 
