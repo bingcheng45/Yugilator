@@ -30,6 +30,20 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
   String expression = '';
   double equationFontSize = 38.0;
   double resultFontSize = 48.0;
+  int playerSelected = 0;
+
+  void restartGame() {
+    setState(() {
+      equation = '0';
+      result = '0';
+      player1Health = '8000';
+      player2Health = '8000';
+      expression = '';
+      equationFontSize = 38.0;
+      resultFontSize = 48.0;
+      playerSelected = 0;
+    });
+  }
 
   buttonPressed(String buttonText) {
     setState(() {
@@ -60,7 +74,18 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
 
           result = '${exp.evaluate(EvaluationType.REAL, cm).toInt()}';
           equation = '0';
-          player1Health = result;
+          if (playerSelected != 0) {
+            if (playerSelected == 1) {
+              player1Health = result;
+            } else if (playerSelected == 2) {
+              player2Health = result;
+            }
+          }
+          if (int.parse(player1Health) <= 0) {
+            _showWinner('2');
+          } else if (int.parse(player2Health) <= 0) {
+            _showWinner('1');
+          }
         } catch (e) {
           result = 'Error';
           //result = e.toString(); //for debugging
@@ -75,6 +100,28 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
         }
       }
     });
+  }
+
+  void _showWinner(String winnerName) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Player $winnerName Win!'),
+          content: Text('Thank you for using my Application. :)'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Play Again'),
+              onPressed: () {
+                restartGame();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget buildPlayerBox(String name, Color color, String healthPoints) {
@@ -93,7 +140,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
           Text(
             healthPoints,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 52, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -130,7 +177,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
-        title: Text('SimpleCalculator'),
+        title: Text('Yugilator'),
       ),
       body: Column(children: <Widget>[
         // Container(
@@ -146,18 +193,34 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
             children: <Widget>[
               Expanded(
                 flex: 1,
-                child: buildPlayerBox(
-                  'Player 1',
-                  Colors.lightBlueAccent[700],
-                  player1Health,
+                child: new GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      equation = player1Health;
+                      playerSelected = 1;
+                    });
+                  },
+                  child: buildPlayerBox(
+                    'Player 1',
+                    Colors.lightBlueAccent[700],
+                    player1Health,
+                  ),
                 ),
               ),
               Expanded(
                 flex: 1,
-                child: buildPlayerBox(
-                  'Player 2',
-                  Colors.pinkAccent[100],
-                  player2Health,
+                child: new GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      equation = player2Health;
+                      playerSelected = 2;
+                    });
+                  },
+                  child: buildPlayerBox(
+                    'Player 2',
+                    Colors.pinkAccent[100],
+                    player2Health,
+                  ),
                 ),
               ),
             ],
