@@ -1,5 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:math_expressions/math_expressions.dart';
+import 'package:audioplayer/audioplayer.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:math';
 
 void main() {
   runApp(Calculator());
@@ -31,6 +36,30 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
   double equationFontSize = 38.0;
   double resultFontSize = 48.0;
   int playerSelected = 0;
+
+  AudioPlayer audioPlugin = AudioPlayer();
+  String mp3Uri;
+
+  @override
+  void initState() {
+    _load();
+  }
+
+  Future<Null> _load() async {
+    final ByteData data =
+        await rootBundle.load('assets/LifePointSoundEffect.mp3');
+    Directory tempDir = await getTemporaryDirectory();
+    File tempFile = File('${tempDir.path}/LifePointSoundEffect.mp3');
+    await tempFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
+    mp3Uri = tempFile.uri.toString();
+    print('finished loading, uri=$mp3Uri');
+  }
+
+  void _playSound() {
+    if (mp3Uri != null) {
+      audioPlugin.play(mp3Uri, isLocal: true);
+    }
+  }
 
   void restartGame() {
     setState(() {
@@ -83,8 +112,10 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
           }
           if (int.parse(player1Health) <= 0) {
             _showWinner('2');
+            _playSound();
           } else if (int.parse(player2Health) <= 0) {
             _showWinner('1');
+            _playSound();
           }
         } catch (e) {
           result = 'Error';
@@ -100,6 +131,89 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
         }
       }
     });
+  }
+
+  void _ShowPopUp(String title, Widget content) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: content,
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _coinToss() {
+    var rng = Random();
+    String content = '';
+    if (rng.nextInt(2) == 0) {
+      content = 'heads';
+    } else {
+      content = 'tails';
+    }
+    //print(rng.nextInt(2).toString());
+    _ShowPopUp(
+      'Coin Toss!',
+      Text('It is $content'),
+    );
+  }
+
+  void _rollDie() {
+    var rng = Random();
+    double iconSize = 50;
+    Icon dieIcon;
+    if (rng.nextInt(6) == 0) {
+      dieIcon = Icon(
+        Icons.looks_one,
+        size: iconSize,
+      );
+    } else if (rng.nextInt(6) == 1) {
+      dieIcon = Icon(
+        Icons.looks_two,
+        size: iconSize,
+      );
+    } else if (rng.nextInt(6) == 2) {
+      dieIcon = Icon(
+        Icons.looks_3,
+        size: iconSize,
+      );
+    } else if (rng.nextInt(6) == 3) {
+      dieIcon = Icon(
+        Icons.looks_4,
+        size: iconSize,
+      );
+    } else if (rng.nextInt(6) == 4) {
+      dieIcon = Icon(
+        Icons.looks_5,
+        size: iconSize,
+      );
+    } else if (rng.nextInt(6) == 5) {
+      dieIcon = Icon(
+        Icons.looks_6,
+        size: iconSize,
+      );
+    }
+    _ShowPopUp(
+      'Roll a die!',
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text('You have rolled a '),
+          dieIcon,
+        ],
+      ),
+    );
   }
 
   void _showWinner(String winnerName) {
@@ -178,6 +292,31 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
         title: Text('Yugilator'),
+        actions: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                _coinToss();
+              },
+              child: Icon(
+                Icons.fiber_smart_record,
+                color: Colors.yellow,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                _rollDie();
+              },
+              child: Icon(
+                Icons.looks_6,
+              ),
+            ),
+          ),
+        ],
       ),
       body: Column(children: <Widget>[
         // Container(
@@ -193,7 +332,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
             children: <Widget>[
               Expanded(
                 flex: 1,
-                child: new GestureDetector(
+                child: GestureDetector(
                   onTap: () {
                     setState(() {
                       equation = player1Health;
@@ -209,7 +348,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
               ),
               Expanded(
                 flex: 1,
-                child: new GestureDetector(
+                child: GestureDetector(
                   onTap: () {
                     setState(() {
                       equation = player2Health;
