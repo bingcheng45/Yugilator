@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,10 +7,12 @@ import 'package:audioplayer/audioplayer.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:math';
 
+//run flutter Application
 void main() {
   runApp(Calculator());
 }
 
+//Main application front page
 class Calculator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -22,6 +25,7 @@ class Calculator extends StatelessWidget {
   }
 }
 
+//stateful widget that we are doing all the stuff on
 class SimpleCalculator extends StatefulWidget {
   @override
   _SimpleCalculatorState createState() => _SimpleCalculatorState();
@@ -36,28 +40,41 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
   double equationFontSize = 38.0;
   double resultFontSize = 48.0;
   int playerSelected = 0;
-
   AudioPlayer audioPlugin = AudioPlayer();
-  String mp3Uri;
+  String hpSound;
+  String coinSound;
+  String diceSound;
 
+  //load the sound effects.
   @override
   void initState() {
-    _load();
+    _load('LifePointSoundEffect.mp3', 'hpSound');
+    _load('CoinFlip.mp3', 'coinSound');
+    _load('DiceRoll.mp3', 'diceSound');
   }
 
-  Future<Null> _load() async {
-    final ByteData data =
-        await rootBundle.load('assets/LifePointSoundEffect.mp3');
+  Future<Null> _load(String filename, String soundType) async {
+    final ByteData data = await rootBundle.load('assets/$filename');
     Directory tempDir = await getTemporaryDirectory();
-    File tempFile = File('${tempDir.path}/LifePointSoundEffect.mp3');
+    File tempFile = File('${tempDir.path}/$filename');
     await tempFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
-    mp3Uri = tempFile.uri.toString();
-    print('finished loading, uri=$mp3Uri');
+
+    if (soundType == 'hpSound') {
+      hpSound = tempFile.uri.toString();
+    } else if (soundType == 'coinSound') {
+      coinSound = tempFile.uri.toString();
+    } else if (soundType == 'diceSound') {
+      diceSound = tempFile.uri.toString();
+    }
   }
 
-  void _playSound() {
-    if (mp3Uri != null) {
-      audioPlugin.play(mp3Uri, isLocal: true);
+  void _playSound(String soundName) {
+    if (hpSound != null && soundName == 'hpSound') {
+      audioPlugin.play(hpSound, isLocal: true);
+    } else if (coinSound != null && soundName == 'coinSound') {
+      audioPlugin.play(coinSound, isLocal: true);
+    } else if (diceSound != null && soundName == 'diceSound') {
+      audioPlugin.play(diceSound, isLocal: true);
     }
   }
 
@@ -79,19 +96,12 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
       if (buttonText == "C") {
         equation = '0';
         result = '0';
-        // equationFontSize = 38.0;
-        // resultFontSize = 48.0;
       } else if (buttonText == "⌫") {
-        // equationFontSize = 48.0;
-        // resultFontSize = 38.0;
         equation = equation.substring(0, equation.length - 1);
         if (equation == '') {
           equation = '0';
         }
       } else if (buttonText == "=") {
-        // equationFontSize = 38.0;
-        // resultFontSize = 48.0;
-
         expression = equation;
         expression = expression.replaceAll('×', '*');
         expression = expression.replaceAll('÷', '/');
@@ -112,18 +122,16 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
           }
           if (int.parse(player1Health) <= 0) {
             _showWinner('2');
-            _playSound();
+            _playSound('hpSound');
           } else if (int.parse(player2Health) <= 0) {
             _showWinner('1');
-            _playSound();
+            _playSound('hpSound');
           }
         } catch (e) {
           result = 'Error';
           //result = e.toString(); //for debugging
         }
       } else {
-        // equationFontSize = 48.0;
-        // resultFontSize = 38.0;
         if (equation == "0") {
           equation = buttonText;
         } else {
@@ -133,7 +141,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
     });
   }
 
-  void _ShowPopUp(String title, Widget content) {
+  void _showPopUp(String title, Widget content) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -163,7 +171,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
       content = 'tails';
     }
     //print(rng.nextInt(2).toString());
-    _ShowPopUp(
+    _showPopUp(
       'Coin Toss!',
       Text('It is $content'),
     );
@@ -204,7 +212,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
         size: iconSize,
       );
     }
-    _ShowPopUp(
+    _showPopUp(
       'Roll a die!',
       Column(
         mainAxisSize: MainAxisSize.min,
@@ -240,8 +248,6 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
 
   Widget buildPlayerBox(String name, Color color, String healthPoints) {
     return Container(
-      //width: MediaQuery.of(context).size.width,
-      // height: MediaQuery.of(context).size.height,
       color: color,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -297,6 +303,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
             padding: EdgeInsets.only(right: 20.0),
             child: GestureDetector(
               onTap: () {
+                _playSound('coinSound');
                 _coinToss();
               },
               child: Icon(
@@ -309,24 +316,31 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
             padding: EdgeInsets.only(right: 20.0),
             child: GestureDetector(
               onTap: () {
-                _rollDie();
+                _playSound('diceSound');
+                Timer(Duration(seconds: 2), () {
+                  _rollDie();
+                });
               },
               child: Icon(
-                Icons.looks_6,
+                Icons.casino,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                _playSound('hpSound');
+                restartGame();
+              },
+              child: Icon(
+                Icons.refresh,
               ),
             ),
           ),
         ],
       ),
       body: Column(children: <Widget>[
-        // Container(
-        //   alignment: Alignment.centerRight,
-        //   padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
-        //   child: Text(
-        //     result,
-        //     style: TextStyle(fontSize: resultFontSize),
-        //   ),
-        // ),
         Expanded(
           child: Row(
             children: <Widget>[
