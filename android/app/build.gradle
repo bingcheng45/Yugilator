@@ -45,7 +45,7 @@ android {
         applicationId "com.gatalong.yugilator"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 2
+        versionCode 3
         //flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

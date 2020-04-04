@@ -181,32 +181,33 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
     var rng = Random();
     double iconSize = 50;
     Icon dieIcon;
-    if (rng.nextInt(6) == 0) {
+    int random = rng.nextInt(6);
+    if (random == 0) {
       dieIcon = Icon(
         Icons.looks_one,
         size: iconSize,
       );
-    } else if (rng.nextInt(6) == 1) {
+    } else if (random == 1) {
       dieIcon = Icon(
         Icons.looks_two,
         size: iconSize,
       );
-    } else if (rng.nextInt(6) == 2) {
+    } else if (random == 2) {
       dieIcon = Icon(
         Icons.looks_3,
         size: iconSize,
       );
-    } else if (rng.nextInt(6) == 3) {
+    } else if (random == 3) {
       dieIcon = Icon(
         Icons.looks_4,
         size: iconSize,
       );
-    } else if (rng.nextInt(6) == 4) {
+    } else if (random == 4) {
       dieIcon = Icon(
         Icons.looks_5,
         size: iconSize,
       );
-    } else if (rng.nextInt(6) == 5) {
+    } else if (random == 5) {
       dieIcon = Icon(
         Icons.looks_6,
         size: iconSize,
@@ -252,15 +253,19 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          FittedBox(
+            child: Text(
+              name,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
           ),
-          Text(
-            healthPoints,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
+          FittedBox(
+            child: Text(
+              healthPoints,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -281,12 +286,14 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
         ),
         padding: EdgeInsets.all(16.0),
         onPressed: () => buttonPressed(buttonText),
-        child: Text(
-          buttonText,
-          style: TextStyle(
-              fontSize: 30.0,
-              fontWeight: FontWeight.normal,
-              color: Colors.white),
+        child: FittedBox(
+          child: Text(
+            buttonText,
+            style: TextStyle(
+                fontSize: 30.0,
+                fontWeight: FontWeight.normal,
+                color: Colors.white),
+          ),
         ),
       ),
     );
@@ -317,9 +324,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
             child: GestureDetector(
               onTap: () {
                 _playSound('diceSound');
-                Timer(Duration(seconds: 2), () {
-                  _rollDie();
-                });
+                _rollDie();
               },
               child: Icon(
                 Icons.casino,
